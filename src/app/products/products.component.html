@@ -1,19 +1,31 @@
 <div class="container mt-3">
-<ng-template #errors>
-<div class="text-danger">{{errorMsg}}</div>
-</ng-template>
+    <ng-template #errors>
+        <div class="text-danger">{{errorMsg}}</div>
+    </ng-template>
 
     <div class="card" *ngIf="products; else errors">
         <div class="card-header">Products List</div>
 
         <div class="card-body">
+            <form [formGroup]="searchForm" (ngSubmit)="handelSearchProduct()">
+                <div class="input-group">
+                    <label for="key" class="input-goup-text me-2"><strong> Keyword :</strong></label>
+                    <input id="key" type="text" class="form-control" formControlName="keyword">
+
+                    <button class="btn btn-secondary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
             <table class="table">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
                         <th>Price</th>
-                        <th>Delete</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -21,6 +33,17 @@
                         <td>{{p.id}}</td>
                         <td>{{p.name}}</td>
                         <td>{{p.price}}</td>
+
+                        <td>
+                            <i *ngIf="p.promotion" class="bi bi-heart-fill text-success"></i>
+                        </td>
+                        <td>
+                            <button (click)="handelSetPromotion(p)"
+                                [ngClass]="p.promotion? 'btn btn-danger':'btn btn-success'">
+                                <span *ngIf="p.promotion">Promo Off</span>
+                                <span *ngIf="!p.promotion">Promo On</span>
+                            </button>
+                        </td>
                         <td>
                             <button class="btn btn-danger" (click)="handelDeleteProduct(p)">
                                 <i class="bi bi-trash"></i>
