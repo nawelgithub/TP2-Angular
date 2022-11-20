@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { UUID } from 'angular2-uuid';
 import { Observable, of, throwError } from 'rxjs';
-import { product } from '../model/product.model';
+import { PageProduct, product } from '../model/product.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,11 +14,16 @@ export class ProductService {
 
   constructor() {
     this.products = [
-      { id: 1, name: "Computer", price: 3000, promotion: true },
-      { id: 2, name: "Printer", price: 650, promotion: false },
-      { id: 3, name: "Smart Phone", price: 1400, promotion: true },
-
+      { id: UUID.UUID(), name: "Computer", price: 3000, promotion: true },
+      { id: UUID.UUID(), name: "Printer", price: 650, promotion: false },
+      { id: UUID.UUID(), name: "Smart Phone", price: 1400, promotion: true }
     ];
+    //je vais dupliquer les données pour tester la pagination
+
+    for (let i = 0; i < 20; i++)
+      this.products.push({ id: UUID.UUID(), name: "Computer", price: 3000, promotion: true });
+    this.products.push({ id: UUID.UUID(), name: "Printer", price: 650, promotion: false });
+    this.products.push({ id: UUID.UUID(), name: "Smart Phone", price: 1400, promotion: true });
   }
 
   public getAllProducts(): Observable<product[]> {
@@ -28,12 +34,25 @@ export class ProductService {
     return of(this.products);
   }
 
-  public deleteProduct(id: number): Observable<boolean> {
+
+
+  public getPageProduct(page: number, size: number): Observable<PageProduct> {
+    let index = page * size;
+    // les deux ~~ pour dire c la division entière => pas nombre aprés la virgule
+    let totalPages = ~~(this.products.length / size);
+    if (this.products.length % size != 0)
+      totalPages++;
+
+    let PageProducts = this.products.slice(index, index + size);
+    return of({ page: page, size: size, totalPages: totalPages, products: PageProducts });
+  }
+
+  public deleteProduct(id: string): Observable<boolean> {
     this.products = this.products.filter(p => p.id != id);
     return of(true);
   }
 
-  setPromotion(id: number): Observable<boolean> {
+  setPromotion(id: string): Observable<boolean> {
     let product = this.products.find(p => p.id == id);
     if (product != undefined) {
       product.promotion = !product.promotion;
@@ -44,9 +63,16 @@ export class ProductService {
     }
   }
 
-  searchProduct(keyword: string): Observable<product[]> {
-    let products = this.products.filter(p => p.name.includes(keyword));
-    return of(products);
+  searchProduct(keyword: string, page: number, size: number): Observable<PageProduct> {
+    let result = this.products.filter(p => p.name.includes(keyword));
+    let index = page * size;
+    let totalPages = ~~(result.length / size);
+    if (this.products.length % size != 0)
+      totalPages++;
+
+    let PageProducts = result.slice(index, index + size);
+
+    return of({ page: page, size: size, totalPages: totalPages, products: PageProducts });
   }
 
 }

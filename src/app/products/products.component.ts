@@ -12,6 +12,10 @@ export class ProductsComponent implements OnInit {
   products!: Array<product>;
   errorMsg!: string;
   searchForm!: FormGroup;
+  currentPage: number = 0;
+  pageSize: number = 6;
+  totalPage: number = 0;
+  currentAction: string = "all";
 
   constructor(private productService: ProductService, private fb: FormBuilder) { }
 
@@ -20,9 +24,31 @@ export class ProductsComponent implements OnInit {
       keyword: this.fb.control(null)
     })
 
-    this.handelGetAllProducts();
+    //this.handelGetAllProducts();
+    this.handelGetPageProducts();
   }
 
+
+  handelGetPageProducts() {
+    this.productService.getPageProduct(this.currentPage, this.pageSize).subscribe({
+      next: (data) => {
+        this.products = data.products;
+        this.totalPage = data.totalPages;
+        //console.log(this.totalPage);
+      },
+      error: err => {
+        this.errorMsg = err;
+      }
+    });
+  }
+
+  goToPage(i: number) {
+    this.currentPage = i;
+    if(this.currentAction=="all")
+    this.handelGetPageProducts();
+    else
+    this.handelSearchProduct();
+  }
 
   handelGetAllProducts() {
     this.productService.getAllProducts().subscribe({
@@ -68,11 +94,14 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  handelSearchProduct(){
+  handelSearchProduct() {
+    this.currentAction="search";
+    this.currentPage=0;
     let keyword = this.searchForm.value.keyword;
-    this.productService.searchProduct(keyword).subscribe({
-      next: data=>{
-        this.products=data;
+    this.productService.searchProduct(keyword,this.currentPage,this.pageSize).subscribe({
+      next: data => {
+        this.products = data.products;
+        this.totalPage = data.totalPages;
       }
     });
   }

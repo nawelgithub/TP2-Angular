@@ -52,6 +52,14 @@
                     </tr>
                 </tbody>
             </table>
+
+            <ul class="nav nav-pills">
+                <!--por ngfor il faut parcourir un tableau donc ici j'ai créer un tableau de dimension totalpage-->
+                <li *ngFor="let item of [].constructor(this.totalPage); let i= index">
+                    <a (click)="goToPage(i)" [ngClass]="i==currentPage?'btn-info ':'btn-outline-info '"  class="btn ms-1 mt-1">{{i}}</a>
+                </li>
+            </ul>
+
         </div>
 
     </div>
